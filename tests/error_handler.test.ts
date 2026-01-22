@@ -14,7 +14,23 @@ describe('Global Error Handler', () => {
       .send({ username: 'test', password: 'password' });
 
     expect(response.status).to.equal(500);
-    expect(response.body).to.have.property('message', 'Internal Server Error');
+    expect(response.body).to.have.property('error', 'Test Error');
+
+    findOneStub.restore();
+  });
+
+  it('should handle unhandled errors, return 500 and return default error message', async () => {
+    // Force an error in one of the controllers
+    const findOneStub = sinon
+      .stub(UserModel, 'findOne')
+      .throws(new Error());
+
+    const response = await request(app)
+      .post('/api/v1/login')
+      .send({ username: 'test', password: 'password' });
+
+    expect(response.status).to.equal(500);
+    expect(response.body).to.have.property('error', 'Internal Server Error');
 
     findOneStub.restore();
   });
